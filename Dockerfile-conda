@@ -1,0 +1,6 @@
+# The build-stage image:
+FROM continuumio/miniconda3
+
+# Install the package as normal:
+COPY environment.yml /tmp/environment.yml
+RUN conda env create -f /tmp/environment.yml
