@@ -8,12 +8,10 @@ from util import log, get_filtering_rules, generate_app_id , generate_storage_op
 
 def run(argv, parser):
     """
-
-    :param argv:
-    :param parser:
-    :return:
+    Implementation of pandas-flavored taxi rides.
+    :param argv: arguments
+    :param parser: argument parser isntance
     """
-
     # parse arguments
     args = setup_parser(parser).parse_args(argv)
 
@@ -88,10 +86,10 @@ def run(argv, parser):
 
 def taxi_zones(path, storage_options=None):
     """
-
-    :param storage_options:
-    :param path:
-    :return:
+    Return taxi-zones pandas dataframe.
+    :param path: input path
+    :param storage_options: storage options dict
+    :return: taxi-zones dataframe
     """
 
     zdf = pd.read_csv(path, storage_options=storage_options)
@@ -102,12 +100,11 @@ def taxi_zones(path, storage_options=None):
 
 def taxi_rides(path, storage_options=None):
     """
-
-    :param storage_options:
-    :param path:
-    :return:
+    Return taxi-rides pandas dataframe.
+    :param path: input path
+    :param storage_options: storage options dict
+    :return: taxi-rides dataframe
     """
-
     # transformation function for proper datetime type
     date_parser = lambda col: pd.to_datetime(col, format="%m/%d/%Y %I:%M:%S %p")
     # transformation function for proper monetary columns
@@ -127,13 +124,12 @@ def taxi_rides(path, storage_options=None):
 
 def taxi_rides_iterator(path, n, storage_options=None):
     """
-
-    :param storage_options:
-    :param path:
-    :param n:
-    :return:
+    Return taxi-rides pandas dataframe iterator.
+    :param path: input path
+    :param n: chunk size
+    :param storage_options: storage options dict
+    :return: taxi-rides dataframe iterator
     """
-
     # transformation function for proper datetime type
     date_parser = lambda col: pd.to_datetime(col, format="%m/%d/%Y %I:%M:%S %p")
 
@@ -155,22 +151,22 @@ def taxi_rides_iterator(path, n, storage_options=None):
 
 def taxi_rides_sample(path, n, storage_options=None):
     """
-
-    :param path:
-    :param n:
-    :param storage_options:
-    :return:
+    Return taxi-rides first n records as pandas dataframe.
+    :param path: input path
+    :param n: chunk size
+    :param storage_options: storage options dict
+    :return: taxi-rides first n records as pandas dataframe
     """
     return next(taxi_rides_iterator(path, n, storage_options))
 
 
 def filtering_rules_to_expression(filtering_rules):
     """
-
-    :param filtering_rules:
-    :return:
+    Return comparison expressions as filtering rule.
+    :param filtering_rules: filtering rules provided by arguments
+    :return: return comparison expressions as filtering rules
     """
-
+    # define rule to expression
     def rule_to_expression(column, filter_type, filter_params):
         if filter_type == "range":
             sdt = "Timestamp({},{},{})".format(filter_params[0][0], filter_params[0][1], filter_params[0][2])
@@ -207,16 +203,18 @@ def filtering_rules_to_expression(filtering_rules):
 
 def join_with_zones(taxi_rides_df, taxi_zones_df):
     """
-
-    :param taxi_rides_df:
-    :param taxi_zones_df:
-    :return:
+    Perform joining taxi-rides and taxi zones dataframes on Location ID.
+    :param taxi_rides_df: taxi rides dataframe
+    :param taxi_zones_df: taxi zone dataframe
+    :return: joined  taxi-rides and taxi zones dataframes on Location ID
     """
+    # inner join on pickup location id, drop duplicate columns
     taxi_rides_df = taxi_rides_df.merge(taxi_zones_df, how="inner", sort=False,
                                         left_on="PULocationID",
                                         right_on="LocationID",
                                         right_index=True)
     taxi_rides_df.drop("PULocationID", axis="columns", inplace=True)
+    # inner join on drop off location id, drop duplicate columns
     taxi_rides_df = taxi_rides_df.merge(taxi_zones_df, how="inner", sort=False,
                                         left_on="DOLocationID",
                                         right_on="LocationID",
@@ -228,9 +226,9 @@ def join_with_zones(taxi_rides_df, taxi_zones_df):
 
 def setup_parser(parser):
     """
-
-    :param parser:
-    :return:
+    Setup argument parser.
+    :param parser: argument parser
+    :return: configured parser
     """
     from util import setup_parser
     parser = setup_parser(parser)

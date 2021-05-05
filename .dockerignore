@@ -1,6 +1,4 @@
 .git
-bash
-cert
 data
 Dockerfile*
 .DS_Store

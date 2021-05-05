@@ -12,8 +12,20 @@ RUN /venv/bin/conda-unpack
 # The runtime-stage image;
 FROM debian:buster AS runtime
 
-# install az-cli
-RUN apt-get -y update && apt-get -y install curl && curl -sL https://aka.ms/InstallAzureCLIDeb | bash
-
 # Copy /venv from the previous stage:
 COPY --from=build /venv /venv
+
+# install az-cli
+RUN apt-get update -y && apt-get install -y curl wget
+RUN sh -c 'curl -sL https://aka.ms/InstallAzureCLIDeb | /bin/bash'
+
+# install azcopy
+RUN wget https://aka.ms/downloadazcopy-v10-linux && tar -xvf downloadazcopy-v10-linux && \
+  cp ./azcopy_linux_amd64_*/azcopy /usr/bin/azcopy
+
+# make taxi-rides directory
+RUN mkdir /taxi_rides
+
+# copy certificate and python
+COPY python /taxi_rides/python
+COPY bash/taxi-rides-data-ingestion/containers/taxi-rides-data-ingestion-pandas.sh /taxi_rides/bash/taxi-rides-data-ingestion-pandas.sh
