@@ -7,7 +7,7 @@ export PEM_CERT_PATH="${CERT_PATH}/taxi-rides-data-ingestion.pem"
 export PFX_CERT_PATH="${CERT_PATH}/taxi-rides-data-ingestion.pfx"
 export SECRET_PATH="/taxi_rides/cert/secret"
 
-# --------------------------------------
+# --------------------
 # --- AzCopy ---------
 
 
@@ -20,7 +20,7 @@ export AZCOPY_SPA_CERT_PATH=$PEM_CERT_PATH
 azcopy list  https://whantanataxirides.dfs.core.windows.net/taxi-rides-container
 
 
-# --------------------------------------
+# --------------------
 # --- Az CLI ---------
 
 # login with certificate
@@ -36,7 +36,7 @@ az login --service-principal \
 --password $(cat $SECRET_PATH) \
 --tenant ${AZ_TENANT_ID}
 
-# --------------------------------------
+# -------------------------
 # --- Docker push ---------
 
 # login to Azure Container Registry
@@ -47,15 +47,16 @@ docker build whantana/taxi-rides
 docker tag whantana/taxi-rides taxiridescontainerregistry.azurecr.io/taxi-rides:latest
 docker push taxiridescontainerregistry.azurecr.io/taxi-rides:latest
 
-
+# ----------------------------------------------------
+# --- Create and Run container in Azure push ---------
 # Create container
 az container create --name "taxi-rides-data-ingestion-container" \
 --resource-group "taxi-rides-rg" \
 --image "taxiridescontainerregistry.azurecr.io/taxi-rides:latest" \
---assign-identity $(az identity show -n  "taxi-rides-keyvault-secret-reader" -g "taxi-rides-rg" --query "id" -o "tsv") \
+--assign-identity $(az identity show -n  "taxi-rides-keyvault-secret-reader" -g "taxi-rides-rg" --query "id" -o tsv) \
 --cpu 4 --memory 12 \
 --registry-login-server taxiridescontainerregistry.azurecr.io \
---registry-username $(az ad sp list --display-name "taxi-rides-data-ingestion" --query "[0].appId" -o "tsv") \
+--registry-username $(az ad sp list --display-name "taxi-rides-data-ingestion" --query "[0].appId" -o tsv) \
 --registry-password $(cat $SECRET_PATH) \
 --restart-policy "Never" \
 --command-line "/bin/bash /taxi_rides/bash/taxi-rides-data-ingestion-pandas.sh \\
@@ -72,10 +73,14 @@ az container create --name "taxi-rides-data-ingestion-container" \
 #az container restart --name "taxi-rides-data-ingestion-container" --resource-group "taxi-rides-rg"
 ## attach to logs
 #az container attach --name "taxi-rides-data-ingestion-container" --resource-group "taxi-rides-rg"
+
 # stop container
 az container stop --name "taxi-rides-data-ingestion-container" --resource-group "taxi-rides-rg"
 # stop container
 az container delete --name "taxi-rides-data-ingestion-container" --resource-group "taxi-rides-rg" --yes
+
+# -----------------------------------------------------
+# --- Calculate data ingestion process output ---------
 
 # Calculate and print data ingestion result size in bytes
 total_sz=0
