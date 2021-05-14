@@ -15,17 +15,25 @@ FROM debian:buster AS runtime
 # Copy /venv from the previous stage:
 COPY --from=build /venv /venv
 
+# install curl, wget java and ant
+RUN apt-get update -y && apt-get install -y curl wget openjdk-11-jdk ant ca-certificates-java && apt-get clean && update-ca-certificates -f
+
 # install az-cli
-RUN apt-get update -y && apt-get install -y curl wget
 RUN sh -c 'curl -sL https://aka.ms/InstallAzureCLIDeb | /bin/bash'
+
+# setup JAVA_HOME
+ENV JAVA_HOME /usr/lib/jvm/java-11-openjdk-amd64/
+RUN export JAVA_HOME
 
 # install azcopy
 RUN wget https://aka.ms/downloadazcopy-v10-linux && tar -xvf downloadazcopy-v10-linux && \
   cp ./azcopy_linux_amd64_*/azcopy /usr/bin/azcopy
 
-# make taxi-rides directory
+# make taxi-rides directory and cert
 RUN mkdir /taxi_rides
+RUN mkdir /taxi_rides/bash
 
-# copy certificate and python
+# copy certificate and python, bash and jars
 COPY python /taxi_rides/python
-COPY bash/taxi-rides-data-ingestion/containers/taxi-rides-data-ingestion-pandas.sh /taxi_rides/bash/taxi-rides-data-ingestion-pandas.sh
+COPY bash/data-ingestion /taxi_rides/bash/data-ingestion
+COPY jars /taxi_rides/jars

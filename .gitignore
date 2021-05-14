@@ -1,5 +1,9 @@
 data
-cert
+authn/cert
 .idea
 __pycache__/
 json
+dask-worker-space
+bash/admin
+bash/data-ingestion/local
+authn

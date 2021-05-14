@@ -1,6 +1,6 @@
 import argparse
 import sys
-from util import log
+from util import info, init_parser
 
 
 def run(argv, parser):
@@ -10,9 +10,9 @@ def run(argv, parser):
     :param parser:
     :return:
     """
-    args = setup_parser(parser).parse_args(argv)
-    log("Hello shell")
-    log(args)
+    args = setup_parser(init_parser(parser)).parse_args(argv)
+    info("Hello shell")
+    info(args)
     from IPython import embed
     embed()
 
@@ -23,8 +23,6 @@ def setup_parser(parser):
     :param parser:
     :return:
     """
-    from util import setup_parser
-    parser = setup_parser(parser)
     return parser
 
 

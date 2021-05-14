@@ -1,10 +1,12 @@
 import sys
 import os
 import argparse
-from util import error
 
 # Modes available  ( maybe pandas-dask-yarn)
+from util import error
+
 ALL_MODES = ["shell", "pandas", "dask", "pyspark"]
+
 
 def main(argv):
     """
